@@ -1,23 +1,9 @@
 #!/bin/bash
 
 # Toggle the laptop touchpad on/off.
-# Parks the cursor at 0,0 when disabling, restores position when enabling.
+# Hides the cursor when disabled, shows it when re-enabled.
 
-CURSOR_STATE="/run/touchpad_cursor_pos"
 PATHS_CACHE="/run/touchpad_inhibited_paths"
-
-# Check current state (if cache exists)
-if [[ -f $PATHS_CACHE ]] && [[ -s $PATHS_CACHE ]]; then
-  first_file=$(head -n 1 "$PATHS_CACHE")
-  current_state=$(cat "$first_file" 2>/dev/null || echo "0")
-else
-  current_state="0"
-fi
-
-if [[ $current_state == "0" ]]; then
-  # About to disable — save cursor position and park at 0,0
-  hyprctl cursorpos 2>/dev/null | tr ',' ' ' > "$CURSOR_STATE"
-fi
 
 # Toggle via polkit (writes to sysfs, requires root)
 pkexec "$OMARCHY_PATH/default/touchpad/toggle-impl"
@@ -31,17 +17,13 @@ else
 fi
 
 if [[ $new_state == "0" ]]; then
-  # Touchpad re-enabled — restore cursor position
-  if [[ -f $CURSOR_STATE ]]; then
-    saved_pos=$(cat "$CURSOR_STATE")
-    hyprctl dispatch movecursor ${saved_pos} >/dev/null 2>&1
-    rm -f "$CURSOR_STATE"
-  fi
-  notify-send "󰟸   Touchpad enabled"
+  # Touchpad re-enabled — show cursor
+  hyprctl keyword cursor:inactive_timeout 0 >/dev/null 2>&1
+  notify-send -t 3000 "󰟸   Touchpad enabled"
 else
-  # Touchpad disabled — park cursor
-  hyprctl dispatch movecursor 0 0 >/dev/null 2>&1
-  notify-send "󰤳   Touchpad disabled"
+  # Touchpad disabled — hide cursor after 1s of inactivity
+  hyprctl keyword cursor:inactive_timeout 1 >/dev/null 2>&1
+  notify-send -t 3000 "󰤳   Touchpad disabled"
 fi
 
 pkill -RTMIN+11 waybar
