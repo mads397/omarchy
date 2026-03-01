@@ -1,0 +1,195 @@
+#!/bin/bash
+
+# Sync Omarchy theme to Zellij by generating a KDL theme from colors.toml
+
+omarchy-cmd-present zellij || exit 0
+
+COLORS_FILE="$HOME/.config/omarchy/current/theme/colors.toml"
+ZELLIJ_THEMES="$HOME/.config/zellij/themes"
+ZELLIJ_CONF="$HOME/.config/zellij/config.kdl"
+
+[[ -f $COLORS_FILE ]] || exit 0
+[[ -f $ZELLIJ_CONF ]] || exit 0
+
+THEME_NAME=$(cat "$HOME/.config/omarchy/current/theme.name" 2>/dev/null)
+[[ -n $THEME_NAME ]] || exit 0
+
+# Extract color value from TOML
+get_color() {
+  grep "^$1 =" "$COLORS_FILE" | cut -d'"' -f2
+}
+
+# Convert hex to space-separated RGB for Zellij KDL
+hex_to_rgb() {
+  local hex="${1#\#}"
+  printf "%d %d %d" "0x${hex:0:2}" "0x${hex:2:2}" "0x${hex:4:2}"
+}
+
+FG=$(hex_to_rgb "$(get_color foreground)")
+BG=$(hex_to_rgb "$(get_color background)")
+BLACK=$(hex_to_rgb "$(get_color color0)")
+RED=$(hex_to_rgb "$(get_color color1)")
+GREEN=$(hex_to_rgb "$(get_color color2)")
+YELLOW=$(hex_to_rgb "$(get_color color3)")
+BLUE=$(hex_to_rgb "$(get_color color4)")
+MAGENTA=$(hex_to_rgb "$(get_color color5)")
+CYAN=$(hex_to_rgb "$(get_color color6)")
+WHITE=$(hex_to_rgb "$(get_color color7)")
+BRIGHT_BLACK=$(hex_to_rgb "$(get_color color8)")
+BRIGHT_RED=$(hex_to_rgb "$(get_color color9)")
+BRIGHT_GREEN=$(hex_to_rgb "$(get_color color10)")
+BRIGHT_YELLOW=$(hex_to_rgb "$(get_color color11)")
+BRIGHT_BLUE=$(hex_to_rgb "$(get_color color12)")
+BRIGHT_MAGENTA=$(hex_to_rgb "$(get_color color13)")
+BRIGHT_CYAN=$(hex_to_rgb "$(get_color color14)")
+BRIGHT_WHITE=$(hex_to_rgb "$(get_color color15)")
+
+mkdir -p "$ZELLIJ_THEMES"
+
+cat > "$ZELLIJ_THEMES/${THEME_NAME}.kdl" << EOF
+themes {
+    $THEME_NAME {
+        text_unselected {
+            base $FG
+            background $BG
+            emphasis_0 $CYAN
+            emphasis_1 $WHITE
+            emphasis_2 $GREEN
+            emphasis_3 $YELLOW
+        }
+
+        text_selected {
+            base $BG
+            background $FG
+            emphasis_0 $CYAN
+            emphasis_1 $WHITE
+            emphasis_2 $GREEN
+            emphasis_3 $YELLOW
+        }
+
+        ribbon_unselected {
+            base $FG
+            background $BRIGHT_BLACK
+            emphasis_0 $GREEN
+            emphasis_1 $BLUE
+            emphasis_2 $CYAN
+            emphasis_3 $MAGENTA
+        }
+
+        ribbon_selected {
+            base $BG
+            background $FG
+            emphasis_0 $RED
+            emphasis_1 $GREEN
+            emphasis_2 $CYAN
+            emphasis_3 $YELLOW
+        }
+
+        table_title {
+            base $YELLOW
+            background $BG
+            emphasis_0 $CYAN
+            emphasis_1 $WHITE
+            emphasis_2 $GREEN
+            emphasis_3 $RED
+        }
+
+        table_cell_unselected {
+            base $FG
+            background $BG
+            emphasis_0 $BLUE
+            emphasis_1 $GREEN
+            emphasis_2 $CYAN
+            emphasis_3 $MAGENTA
+        }
+
+        table_cell_selected {
+            base $BG
+            background $GREEN
+            emphasis_0 $WHITE
+            emphasis_1 $YELLOW
+            emphasis_2 $CYAN
+            emphasis_3 $RED
+        }
+
+        list_unselected {
+            base $FG
+            background $BG
+            emphasis_0 $GREEN
+            emphasis_1 $CYAN
+            emphasis_2 $BLUE
+            emphasis_3 $MAGENTA
+        }
+
+        list_selected {
+            base $BG
+            background $CYAN
+            emphasis_0 $WHITE
+            emphasis_1 $YELLOW
+            emphasis_2 $GREEN
+            emphasis_3 $RED
+        }
+
+        frame_unselected {
+            base $BRIGHT_BLACK
+            background $BG
+            emphasis_0 $GREEN
+            emphasis_1 $CYAN
+            emphasis_2 $BLUE
+            emphasis_3 $FG
+        }
+
+        frame_selected {
+            base $CYAN
+            background $BG
+            emphasis_0 $YELLOW
+            emphasis_1 $WHITE
+            emphasis_2 $GREEN
+            emphasis_3 $RED
+        }
+
+        frame_highlight {
+            base $YELLOW
+            background $BG
+            emphasis_0 $CYAN
+            emphasis_1 $WHITE
+            emphasis_2 $GREEN
+            emphasis_3 $RED
+        }
+
+        exit_code_success {
+            base $GREEN
+            background $BG
+            emphasis_0 0 0 0
+            emphasis_1 0 0 0
+            emphasis_2 0 0 0
+            emphasis_3 0 0 0
+        }
+
+        exit_code_error {
+            base $RED
+            background $BG
+            emphasis_0 0 0 0
+            emphasis_1 0 0 0
+            emphasis_2 0 0 0
+            emphasis_3 0 0 0
+        }
+
+        multiplayer_user_colors {
+            player_1 $CYAN
+            player_2 $GREEN
+            player_3 $YELLOW
+            player_4 $MAGENTA
+            player_5 $BLUE
+            player_6 $RED
+            player_7 $BRIGHT_BLUE
+            player_8 $BRIGHT_CYAN
+            player_9 $BRIGHT_GREEN
+            player_10 $FG
+        }
+    }
+}
+EOF
+
+# Update Zellij config to use this theme
+sed -i "s/^theme \"[^\"]*\"/theme \"$THEME_NAME\"/" "$ZELLIJ_CONF"

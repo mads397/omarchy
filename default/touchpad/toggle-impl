@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Touchpad sysfs toggle — runs as root via polkit.
+# Detects the touchpad, caches the sysfs path, and flips the inhibited flag.
+
+ID_CACHE="/run/touchpad_id"
+PATHS_CACHE="/run/touchpad_inhibited_paths"
+
+if [[ ! -f $ID_CACHE ]] || [[ ! -s $ID_CACHE ]]; then
+  TOUCHPAD_ID=$(libinput list-devices | grep "Device:.*Touchpad" | awk -F'Device: ' '{print $2}' | sed 's/ Touchpad$//' | xargs)
+  echo "$TOUCHPAD_ID" > "$ID_CACHE"
+
+  find /sys/devices -type f -name inhibited 2>/dev/null | while read -r file; do
+    name_file="${file%/*}/name"
+    if [[ -f $name_file ]] && grep -q "$TOUCHPAD_ID" "$name_file"; then
+      echo "$file"
+    fi
+  done > "$PATHS_CACHE"
+fi
+
+if [[ ! -f $PATHS_CACHE ]] || [[ ! -s $PATHS_CACHE ]]; then
+  exit 1
+fi
+
+first_file=$(head -n 1 "$PATHS_CACHE")
+current_state=$(cat "$first_file" 2>/dev/null || echo "0")
+
+if [[ $current_state == "1" ]]; then
+  new_state="0"
+else
+  new_state="1"
+fi
+
+while read -r file; do
+  echo "$new_state" > "$file"
+done < "$PATHS_CACHE"
