@@ -3,7 +3,7 @@
 # Toggle the laptop touchpad on/off.
 # Hides and parks the cursor when disabled, restores when re-enabled.
 
-CURSOR_STATE="/run/touchpad_cursor_pos"
+CURSOR_STATE="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/touchpad_cursor_pos"
 PATHS_CACHE="/run/touchpad_inhibited_paths"
 
 # Check current state before toggle
@@ -41,8 +41,8 @@ if [[ $new_state == "0" ]]; then
   notify-send -t 3000 "󰟸   Touchpad enabled"
 else
   # Touchpad disabled — hide cursor, then park it off-screen
-  hyprctl keyword cursor:inactive_timeout 1 >/dev/null 2>&1
-  sleep 1.1
+  hyprctl keyword cursor:inactive_timeout 0.001 >/dev/null 2>&1
+  sleep 0.05
   hyprctl dispatch movecursor 9999 9999 >/dev/null 2>&1
   notify-send -t 3000 "󰤳   Touchpad disabled"
 fi
