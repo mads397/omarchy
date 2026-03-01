@@ -5,7 +5,7 @@
   "spacing": 0,
   "height": 26,
   "modules-left": ["custom/omarchy", "hyprland/workspaces"],
-  "modules-center": ["clock", "custom/update", "custom/voxtype", "custom/screenrecording-indicator", "custom/idle-indicator", "custom/notification-silencing-indicator"],
+  "modules-center": ["clock", "custom/update", "custom/voxtype", "custom/screenrecording-indicator", "custom/idle-indicator", "custom/notification-silencing-indicator", "custom/touchpad-indicator"],
   "modules-right": [
     "group/tray-expander",
     "bluetooth",
@@ -152,6 +152,12 @@
     "on-click": "omarchy-toggle-notification-silencing",
     "exec": "$OMARCHY_PATH/default/waybar/indicators/notification-silencing.sh",
     "signal": 10,
+    "return-type": "json"
+  },
+  "custom/touchpad-indicator": {
+    "on-click": "omarchy-toggle-touchpad",
+    "exec": "$OMARCHY_PATH/default/waybar/indicators/touchpad.sh",
+    "signal": 11,
     "return-type": "json"
   },
   "custom/voxtype": {

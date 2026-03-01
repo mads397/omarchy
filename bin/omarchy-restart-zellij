@@ -1,0 +1,4 @@
+#!/bin/bash
+
+# Zellij detects config changes automatically — no restart needed.
+# This script exists for convention compatibility with omarchy-refresh-zellij.
