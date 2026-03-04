@@ -7,7 +7,7 @@ polkit.addRule(function(action, subject) {
     if (action.id == "org.freedesktop.policykit.exec" &&
         subject.isInGroup("wheel")) {
         var program = action.lookup("program");
-        if (program && program.indexOf("/default/touchpad/toggle-impl") !== -1) {
+        if (program && program.endsWith("/default/touchpad/toggle-impl")) {
             return polkit.Result.YES;
         }
     }

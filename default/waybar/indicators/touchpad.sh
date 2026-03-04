@@ -10,10 +10,10 @@ if [[ -f $PATHS_CACHE ]]; then
     if [[ $state == "1" ]]; then
       echo '{"text": "󰤳", "tooltip": "Touchpad disabled", "class": "disabled"}'
     else
-      echo '{"text": "", "class": ""}'
+      echo '{"text": "󰟸", "tooltip": "Touchpad enabled", "class": "enabled"}'
     fi
     exit 0
   fi
 fi
 
-echo '{"text": "", "class": ""}'
+echo '{"text": "󰟸", "tooltip": "Touchpad enabled", "class": "enabled"}'
